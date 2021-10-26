@@ -109,15 +109,15 @@ function setMarker() {
     // console.log(item.StationPosition.PositionLon, item.StationPosition.PositionLat)
     L.marker([item.StationPosition.PositionLat, item.StationPosition.PositionLon]).addTo(mymap).bindPopup(
       `<div class="card">
-    <div class="card-body">
-      <h5 class="card-title">${item.StationName.Zh_tw}</h5>
-      <h6 class="card-subtitle mb-2 text-muted">${item.StationAddress.Zh_tw}</h6>
-      <p class="card-text mb-0">可租借車數：${item.AvailableRentBikes}</p>
-      <p class="card-text mt-0">可歸還車數：${item.AvailableReturnBikes}</p>
-    </div>
-  </div>`
+            <div class="card-body">
+                <h5 class="card-title">${item.StationName.Zh_tw}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">${item.StationAddress.Zh_tw}</h6>
+                <p class="card-text mb-0">可租借車數：${item.AvailableRentBikes}</p>
+                <p class="card-text mt-0">可歸還車數：${item.AvailableReturnBikes}</p>
+            </div>
+        </div>`
     )
-  })
+  }) 
 }
 
 
@@ -127,7 +127,7 @@ const bikeRoute = document.querySelector('#bikeRoute');
 function getRoutesData() {
   axios({
     method: 'get',
-    url: 'https://ptx.transportdata.tw/MOTC/v2/Cycling/Shape/Kaohsiung',
+    url: 'https://ptx.transportdata.tw/MOTC/v2/Cycling/Shape/Taichung',
     headers: GetAuthorizationHeader()
   })
     .then((response) => {
@@ -143,10 +143,9 @@ function getRoutesData() {
 
       bikeRoute.addEventListener('change', (e) => {
         const value = e.target.value;
-        // console.log(value)
-        
+        // console.log(myLayer);
         if(myLayer) {
-          // console.log(myLayer);
+        //   console.log(myLayer);
           mymap.removeLayer(myLayer);
         }
         
@@ -154,7 +153,6 @@ function getRoutesData() {
           // console.log(item)
           if (item.RouteName === value) {
             geo = item.Geometry;
-            // console.log(geo)
             
             // 畫線的方法
             polyLine(geo);
@@ -174,7 +172,6 @@ function polyLine(geo) {
   // 建立一個 wkt 的實體
   const wicket = new Wkt.Wkt();
   const geojsonFeature = wicket.read(geo).toJson()
-  
   // 預設樣式
   // myLayer = L.geoJSON(geojsonFeature).addTo(mymap);
 
@@ -183,7 +180,7 @@ function polyLine(geo) {
     "weight": 5,
     "opacity": 0.65
   };
-  const myLayer = L.geoJSON(geojsonFeature, {
+  myLayer = L.geoJSON(geojsonFeature, {
     style: myStyle
   }).addTo(mymap);
 
