@@ -16,6 +16,7 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(
     function (position) {
+      console.log(position);
       const longitude = position.coords.longitude;  // 經度
       const latitude = position.coords.latitude;  // 緯度
       // console.log(longitude)
@@ -96,7 +97,7 @@ function GetAuthorizationHeader() {
   ShaObj.update('x-date: ' + GMTString);
   var HMAC = ShaObj.getHMAC('B64');
   var Authorization = 'hmac username=\"' + AppID + '\", algorithm=\"hmac-sha1\", headers=\"x-date\", signature=\"' + HMAC + '\"';
-
+  console.log(Authorization+','+GMTString);
   return { 'Authorization': Authorization, 'X-Date': GMTString /*,'Accept-Encoding': 'gzip'*/ }; //如果要將js運行在伺服器，可額外加入 'Accept-Encoding': 'gzip'，要求壓縮以減少網路傳輸資料量
 }
 
@@ -121,47 +122,82 @@ function setMarker() {
 }
 
 
+const cityData = [
+  {city: '臺中市', cityEng: 'Taichung'},
+  {city: '新竹縣', cityEng: 'HsinchuCounty'},
+  {city: '基隆市', cityEng: 'Keelung'},
+  {city: '苗栗縣', cityEng: 'MiaoliCounty'},
+  {city: '彰化縣', cityEng: 'ChanghuaCounty'},
+  {city: '新北市', cityEng: 'NewTaipei'},
+  {city: '南投縣', cityEng: 'NantouCounty'},
+  {city: '雲林縣', cityEng: 'YunlinCounty'},
+  {city: '嘉義縣', cityEng: 'ChiayiCounty'},
+  {city: '嘉義市', cityEng: 'Chiayi'},
+  {city: '屏東縣', cityEng: 'PingtungCounty'},
+  {city: '宜蘭縣', cityEng: 'YilanCounty'},
+  {city: '花蓮縣', cityEng: 'HualienCounty'},
+  {city: '臺東縣', cityEng: 'TaitungCounty'},
+  {city: '金門縣', cityEng: 'KinmenCounty'},
+  {city: '澎湖縣', cityEng: 'PenghuCounty'},
+  {city: '桃園市', cityEng: 'Taoyuan'},
+  {city: '臺北市', cityEng: 'Taipei'},
+  {city: '高雄市', cityEng: 'Kaohsiung'},
+  {city: '臺南市', cityEng: 'Tainan'},
+]
+
+let city = '<option value="x">Please Choose One</option>';
+cityData.forEach((item) => {
+  city += `<option value="${item.cityEng}">${item.city}</option>`
+})
+cityName.innerHTML = city;
 
 // 選取自行車的路線
 const bikeRoute = document.querySelector('#bikeRoute');
 function getRoutesData() {
-  axios({
-    method: 'get',
-    url: 'https://ptx.transportdata.tw/MOTC/v2/Cycling/Shape/Taichung',
-    headers: GetAuthorizationHeader()
-  })
-    .then((response) => {
-      console.log('自行車的路線',response)
-      const routeData = response.data;
-
-      let str = '';
-      routeData.forEach((item) => {
-        str += `<option value="${item.RouteName}">${item.RouteName}</option>`
-      })
-      bikeRoute.innerHTML = str;
-
-
-      bikeRoute.addEventListener('change', (e) => {
-        const value = e.target.value;
-        // console.log(myLayer);
-        if(myLayer) {
-        //   console.log(myLayer);
-          mymap.removeLayer(myLayer);
-        }
-        
-        routeData.forEach((item) => {
-          // console.log(item)
-          if (item.RouteName === value) {
-            geo = item.Geometry;
-            
-            // 畫線的方法
-            polyLine(geo);
-          }
-        })
-      })
-
+  const cityN = document.querySelector('#cityName');
+  let chooseCity = 'Taichung'
+  cityN.addEventListener('change', function(){
+    document.querySelector("option[value='x']").setAttribute('disabled', 'disabled')
+    chooseCity = document.querySelector('#cityName').value
+    axios({
+      method: 'get',
+      url: `https://ptx.transportdata.tw/MOTC/v2/Cycling/Shape/${chooseCity}`,
+      headers: GetAuthorizationHeader()
     })
-    .catch((error) => console.log('error', error))
+      .then((response) => {
+        console.log('自行車的路線',response)
+        const routeData = response.data;
+  
+        let str = '';
+        routeData.forEach((item) => {
+          str += `<option value="${item.RouteName}">${item.RouteName}</option>`
+        })
+        bikeRoute.innerHTML = str;
+  
+  
+        bikeRoute.addEventListener('change', (e) => {
+          const value = e.target.value;
+          // console.log(myLayer);
+          if(myLayer) {
+          //   console.log(myLayer);
+            mymap.removeLayer(myLayer);
+          }
+          
+          routeData.forEach((item) => {
+            // console.log(item)
+            if (item.RouteName === value) {
+              geo = item.Geometry;
+              
+              // 畫線的方法
+              polyLine(geo);
+            }
+          })
+        })
+  
+      })
+      .catch((error) => console.log('error', error))
+  })
+  
 }
 getRoutesData();
 
