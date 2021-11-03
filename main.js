@@ -168,7 +168,7 @@ function getRoutesData() {
         console.log('自行車的路線',response)
         const routeData = response.data;
   
-        let str = '';
+        let str = `<option value="xx">Chooese One</option>`;
         routeData.forEach((item) => {
           str += `<option value="${item.RouteName}">${item.RouteName}</option>`
         })
